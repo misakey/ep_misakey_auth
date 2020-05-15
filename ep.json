@@ -1,0 +1,14 @@
+{
+  "parts": [
+    {
+      "name": "main",
+      "hooks": {
+        "authenticate": "ep_misakey_auth/index.js:authenticate",
+        "authorize": "ep_misakey_auth/index.js:authorize",
+        "expressConfigure": "ep_misakey_auth/index.js:expressConfigure",
+        "expressCreateServer": "ep_misakey_auth/index.js:expressCreateServer",
+        "handleMessage": "ep_misakey_auth/index.js:handleMessage"
+      }
+    }
+  ]
+}
