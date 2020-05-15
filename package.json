@@ -1,0 +1,23 @@
+{
+  "name": "ep_misakey_auth",
+  "version": "0.0.1",
+  "description": "Misakey Auth plugin for etherpad-lite",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Misakey <contact@misakey.com>",
+  "license": "MIT",
+  "contributors": [],
+  "dependencies": {
+    "async-stacktrace": "0.0.2",
+    "passport": "^0.4.1",
+    "passport-openidconnect": "^0.0.2"
+  },
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://gitlab.misakey.dev/misakey/ep_misakey_auth.git"
+  }
+}

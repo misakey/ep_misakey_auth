@@ -1,0 +1,12 @@
+
+
+publish:
+  stage: deploy
+  image: node:10.15.3
+  tags:
+    - misakey_js
+  only:
+    refs:
+      - master
+  script:
+    - make deploy-package
