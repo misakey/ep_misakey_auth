@@ -1,0 +1,16 @@
+
+
+publish:
+  stage: deploy
+  image: node:10.15.3
+  tags:
+    - misakey_js
+  only:
+    refs:
+      - master
+  script:
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - ./publish_package.sh
+  artifacts:
+    paths:
+      - /root/.npm/_logs/

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Etherpad - Unauthorized</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon"/>
+
+    <%- style %>
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <h1>Etherpad</h1>
+    </div>
+</header>
+
+<div class="main">
+    <div class="container">
+        <h3>Unauthorized</h3>
+        <p>
+            Your Misakey user doesn't have access to the pads.
+        </p>
+        <p>
+            <a href="/auth/login" class="button">Connect with another account</a> 
+        </p>
+        <p>
+            If you think it's an error, please contact your administrator giving them your email: <%= email %>
+        </p>
+    </div>
+</div>
+</body>
+</html>
