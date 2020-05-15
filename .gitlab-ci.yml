@@ -9,4 +9,5 @@ publish:
     refs:
       - master
   script:
-    - make deploy-package
+    - echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+    - ./publish_package.sh
