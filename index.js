@@ -11,35 +11,50 @@ OpenIDConnectStrategy.prototype.authorizationParams = function(options) {
   return (options.prompt ? { prompt: options.prompt } : {});
 }
 
-settings.users.oidc = settings.ep_misakey_auth.client;
-
 // Settings variables check
-if(!settings.users || !settings.users.oidc) {
-  throw new Error('ep_misakey_auth plugin requires users and oidc settings!');
+if (!settings.ep_misakey_auth) {
+  throw new Error('ep_misakey_auth plugin requires ep_misakey_auth settings!');
 } else {
-    if (!settings.users.oidc.clientID) throw new Error('ep_misakey_auth plugin requires a clientID setting!');
-    if (!settings.users.oidc.clientSecret) throw new Error('ep_misakey_auth plugin requires a clientSecret setting!');
-    if (!settings.users.oidc.callbackURL) throw new Error('ep_misakey_auth plugin requires a callbackURL setting!');
-    if (!settings.users.oidc.scope) throw new Error('ep_misakey_auth plugin requires a scope setting!');
+    if (!settings.ep_misakey_auth.clientID) throw new Error('ep_misakey_auth plugin requires a clientID setting!');
+    if (!settings.ep_misakey_auth.clientSecret) throw new Error('ep_misakey_auth plugin requires a clientSecret setting!');
+    if (!settings.ep_misakey_auth.callbackURL) throw new Error('ep_misakey_auth plugin requires a callbackURL setting!');
 }
 
 // Settings Variables
-var issuer = settings.users.oidc.issuer || "https://auth.misakey.com/_/";
-var authorizationURL = settings.users.oidc.authorizationURL || "https://auth.misakey.com/_/oauth2/auth";
-var tokenURL = settings.users.oidc.tokenURL || "https://auth.misakey.com/_/oauth2/token";
-var clientID = settings.users.oidc.clientID;
-var clientSecret = settings.users.oidc.clientSecret;
-var userinfoURL = settings.users.oidc.userinfoURL || "https://auth.misakey.com/_/userinfo";
-var usernameKey = settings.users.oidc.usernameKey || "sub";
-var idKey = settings.users.oidc.useridKey || "sub";
-var passReqToCallback = settings.users.oidc.passReqToCallback ? true : false;
-var skipUserProfile = settings.users.oidc.skipUserProfile ? true : false;
-var callbackURL = settings.users.oidc.callbackURL;
-var responseType = settings.users.oidc.responseType || "id_token";
-var scope = settings.users.oidc.scope || ["user"];
+var clientID = settings.ep_misakey_auth.clientID;
+var clientSecret = settings.ep_misakey_auth.clientSecret;
+var callbackURL = settings.ep_misakey_auth.callbackURL;
 
-var adminsSub = settings.ep_misakey_auth.adminsSub || [];
-var usersSub = settings.ep_misakey_auth.usersSub || false;
+var issuer = "https://auth.misakey.com/_/";
+var authorizationURL = "https://auth.misakey.com/_/oauth2/auth";
+var tokenURL = "https://auth.misakey.com/_/oauth2/token";
+var userinfoURL = "https://auth.misakey.com/_/userinfo";
+var usernameKey = "email";
+var idKey = "sub";
+var passReqToCallback = false;
+var skipUserProfile = false;
+var responseType = "id_token";
+var scope = [];
+
+var admins = settings.ep_misakey_auth.admins || [];
+var users = settings.ep_misakey_auth.users || false;
+
+const formatUserEmailsAndDomains = (acc, currentValue) => {
+  if (currentValue.indexOf('@') >= 0) {
+    return {
+      ...acc,
+      emails: [...acc.emails, currentValue],
+    }
+  }
+  return {
+    ...acc,
+    domains: [...acc.domains, currentValue],
+  }
+}
+
+const { emails: adminsEmails, domains: adminsDomains } = admins.reduce(formatUserEmailsAndDomains, { emails: [], domains: []});
+
+const { emails: usersEmails, domains: usersDomains } = (users || []).reduce(formatUserEmailsAndDomains, { emails: adminsEmails, domains: adminsDomains});
 
 
 exports.expressConfigure = function(hook_name, context) {
@@ -57,6 +72,7 @@ exports.expressConfigure = function(hook_name, context) {
           responseType: responseType,
           scope: scope
   }, function(iss, sub, profile, accessToken, refreshToken, cb) {
+    const completeProfile = JSON.parse(profile._raw);
     var data = {
       token: {
         type: 'bearer',
@@ -64,6 +80,7 @@ exports.expressConfigure = function(hook_name, context) {
         refreshToken: refreshToken
       },
       sub,
+      email: completeProfile.email,
       authorId: sub,
     }
     authorManager.createAuthorIfNotExistsFor(data[idKey], data[usernameKey]).then(function(authorId) {
@@ -137,7 +154,7 @@ exports.expressCreateServer = function (hook_name, context) {
   app.get('/auth/unauthorized', function(req, res) {
     var render_args = {
       style: eejs.require('ep_misakey_auth/templates/style.ejs', {}),
-      sub: req.session.user.sub,
+      email: req.session.user.email,
     };
 
     res.send(eejs.require('ep_misakey_auth/templates/unauthorized.ejs', render_args));
@@ -174,15 +191,15 @@ exports.authorize = function(hook_name, context, cb) {
 
     // everything else at least needs a login session
     if (!context.req.session.user) return cb([false]);
-    var userSub = context.req.session.user.sub;
+    var userEmail = context.req.session.user.email;
 
-    if (usersSub && [...adminsSub, ...usersSub].indexOf(userSub) < 0) {
+    if (users && usersEmails.indexOf(userEmail) < 0 && usersDomains.indexOf(userEmail.split('@')[1]) < 0) {
       context.res.redirect('/auth/unauthorized');
       return;
     }
 
     // protect the admin routes
-    if (context.resource.indexOf('/admin') === 0 && adminsSub.indexOf(userSub) < 0) return cb([false]);
+    if (context.resource.indexOf('/admin') === 0 && adminsEmails.indexOf(userEmail) < 0 && adminsDomains.indexOf(userEmail.split('@')[1]) < 0) return cb([false]);
 
     cb([true]);
 }
