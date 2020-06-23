@@ -21,7 +21,7 @@ You must add the required keys to etherpad `settings.json` (here with example va
         "misakey": true,
     },
     "ep_misakey_auth": {
-        "clientID": "e8bb31f3-3bda-485d-84a1-4083ed0e8b9c",
+        "clientID": "d3f70c03-fb3f-4296-9d8b-47d93427ff9b",
         "clientSecret": "secret",
         "callbackURL": "http://localhost:9001/auth/callback",
         // For admin & users, you can either give emails or domains
@@ -43,6 +43,13 @@ It's written in the `settings.json` file: `ep_misakey_auth.users` is an array of
 (adding a domain will allow any user with an email @domain.tld to connect). 
 
 `ep_misakey_auth.admins` is a similar array to give access to the `/admin` part of your Etherpad instance.
+
+## Getting it in production ?
+
+You can easily hack arround with the public local client (client ID: `d3f70c03-fb3f-4296-9d8b-47d93427ff9b`; client secret `secret` ; callback: `http://localhost:9001/auth/callback`).
+
+If you want to use it on production, you'll need a SSO client. To do that send us an email at [join@misakey.com](mailto:join@misakey.com).
+As we are in private beta, client creation isn't accessible without invitation for now.
 
 ## License
 
